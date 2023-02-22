@@ -1,9 +1,6 @@
 package com.pts.Controller.site;
 
-import com.pts.DAO.AccountDAO;
-import com.pts.DAO.ChapterDAO;
-import com.pts.DAO.ContentDAO;
-import com.pts.DAO.OrderDAO;
+import com.pts.DAO.*;
 import com.pts.Service.AccountService;
 import com.pts.Service.CategoryService;
 import com.pts.Service.CourseService;
@@ -14,8 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,11 +24,15 @@ import java.util.stream.Collectors;
 
 
 @Controller
+
 public class homeController {
     @Autowired
     AccountService accountService;
     @Autowired
     CourseService courseService;
+
+    @Autowired
+    CategoryDAO categoryDAO;
     @Autowired
     CategoryService categoryService;
     @Autowired
@@ -43,6 +43,9 @@ public class homeController {
     OrderDAO orderDAO;
     @Autowired
     AccountDAO accountDAO;
+
+    @Autowired
+    CourseDAO courseDAO;
     @Autowired
     private ResourceLoader resourceLoader;
 
@@ -56,15 +59,30 @@ public class homeController {
 
     @RequestMapping("")
     public String index(Model m,HttpServletRequest request){
-        List<Course> courses = courseService.findAll().stream().filter(Course::isTps_Status).collect(Collectors.toList());
+
         String username =request.getRemoteUser();
         Account acc =accountDAO.laytk(username);
         m.addAttribute("photo",acc);
 
+        //khoa hoc free
+        List<Course> courses = courseService.findAll().stream().filter(Course::isTps_Status).filter(course -> course.getTps_Price()==0).collect(Collectors.toList());
         m.addAttribute("courses",courses);
+
+        //khoa hoc co phi
+        List<Course> courses1 = courseService.findAll().stream().filter(Course::isTps_Status).filter(course -> course.getTps_Price() >0).collect(Collectors.toList());
+        m.addAttribute("coursess",courses1);
+
+        //danh muc khoa hoc
+        List<Category>categories =categoryDAO.findAll();
+        m.addAttribute("categories",categories);
+
+
+
 
         return "/site/home";
     }
+
+
 //    trang chi tiết
 
 
