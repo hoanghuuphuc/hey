@@ -7,6 +7,7 @@ import com.pts.entity.Payment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -26,18 +27,20 @@ public class PaymentController {
     private PaymentRepository paymentRepository;
 
     @PostMapping
-    public void payment(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
-
+    public String payment(HttpServletRequest req, HttpServletResponse resp, @RequestParam("vnp_Amount")int amount1) throws ServletException {
 
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
-        String vnp_OrderInfo = req.getParameter("vnp_OrderInfo");
-        String orderType = req.getParameter("ordertype");
+        String vnp_CurrCode="VND";
+        String vnp_OrderInfo = "*Nap tien cho thue bao";
+        String orderType = "1";
         String vnp_TxnRef = Config.getRandomNumber(8);
         String vnp_IpAddr = Config.getIpAddress(req);
         String vnp_TmnCode = Config.vnp_TmnCode;
-        int amount = Integer.parseInt(req.getParameter("amount")) * 100;
+        int amount = Integer.parseInt(req.getParameter("vnp_Amount"))*100;
+//        int amount = 1000;
+        System.out.println(amount1);
+        System.out.println(amount);
 
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
@@ -67,8 +70,10 @@ public class PaymentController {
         Payment paymentEntity=new Payment();
         paymentEntity.setAmount(amount);
         paymentEntity.setStatus("NO");
-        paymentEntity.setTxnRef(vnp_TxnRef);
-        paymentEntity.setCreateDate(vnp_CreateDate);
+        paymentEntity.setTxnref(vnp_TxnRef);
+        paymentEntity.setCreatedate(vnp_CreateDate);
+//        paymentEntity.setBankcode(bank_code);
+        paymentEntity.setCurrcode(vnp_CurrCode);
         paymentRepository.save(paymentEntity);
 
 
@@ -102,8 +107,9 @@ public class PaymentController {
         job.addProperty("code", "00");
         job.addProperty("message", "success");
         job.addProperty("data", paymentUrl);
-        Gson gson = new Gson();
-        resp.getWriter().write(gson.toJson(job));
+//        Gson gson = new Gson();
+//        resp.getWriter().write(gson.toJson(job));
+        return paymentUrl;
     }
 
 }
